@@ -1,6 +1,16 @@
 from flask import Flask, request, jsonify, send_file
 from datetime import datetime
 import pandas as pd
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
+scope = ["https://spreadsheets.google.com/feeds",
+         "https://www.googleapis.com/auth/drive"]
+
+creds = ServiceAccountCredentials.from_json_keyfile_name("credenciales.json", scope)
+client = gspread.authorize(creds)
+
+sheet = client.open("Control Asistencia ARMOS").sheet1
 
 app = Flask(__name__)
 
@@ -123,6 +133,14 @@ def registrar():
             "horas_trabajadas": ""
         })
 
+    sheet.append_row([
+    codigo,
+    tipo,
+    ubicacion,
+    ahora.strftime("%Y-%m-%d %H:%M:%S"),
+    horas_trabajadas
+])
+
     else:
         color = "#e74c3c"
 
@@ -180,3 +198,4 @@ def exportar():
 # Run
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
+
