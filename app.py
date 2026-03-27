@@ -1,34 +1,39 @@
 from flask import Flask, request, jsonify, send_file
 from datetime import datetime
 import pandas as pd
+import os
+import json
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 app = Flask(__name__)
 
-# Google Sheets conexión (solo funcionará local por ahora)
+# ===============================
+# CONEXIÓN GOOGLE SHEETS (PRO)
+# ===============================
+sheet = None
+
 try:
-    scope = ["https://spreadsheets.google.com/feeds",
-             "https://www.googleapis.com/auth/drive"]
+    scope = [
+        "https://spreadsheets.google.com/feeds",
+        "https://www.googleapis.com/auth/drive"
+    ]
 
-    import os
-import json
+    credenciales_json = os.getenv("GOOGLE_CREDENTIALS")
 
-credenciales_json = os.getenv("GOOGLE_CREDENTIALS")
+    if credenciales_json:
+        credenciales_dict = json.loads(credenciales_json)
+        creds = ServiceAccountCredentials.from_json_keyfile_dict(credenciales_dict, scope)
+        client = gspread.authorize(creds)
+        sheet = client.open("Control Asistencia ARMOS").sheet1
 
-if credenciales_json:
-    credenciales_dict = json.loads(credenciales_json)
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(credenciales_dict, scope)
-    client = gspread.authorize(creds)
-    sheet = client.open("Control Asistencia ARMOS").sheet1
-else:
+except Exception as e:
+    print("Error Google Sheets:", e)
     sheet = None
-    client = gspread.authorize(creds)
-    sheet = client.open("Control Asistencia ARMOS").sheet1
-except:
-    sheet = None  # evita que falle en Render
 
-# Datos en memoria
+# ===============================
+# DATOS
+# ===============================
 registros = []
 entradas = {}
 
@@ -39,6 +44,9 @@ empleados = [
     {"codigo": "44567", "nombre": "CARLOS RAMIREZ"}
 ]
 
+# ===============================
+# HOME
+# ===============================
 @app.route("/")
 def inicio():
     opciones = ""
@@ -48,10 +56,12 @@ def inicio():
     return f"""
     <html>
     <body style="font-family: Arial; background:#1c1f26; color:white; text-align:center; padding:20px;">
+        
         <img src="/static/logo.png" width="150">
         <h1>Bienvenido a ARMOS</h1>
 
         <form action="/registrar" method="post">
+
             <select name="codigo">{opciones}</select>
 
             <select name="ubicacion">
@@ -60,13 +70,28 @@ def inicio():
                 <option value="Otro">Otro</option>
             </select>
 
-            <button name="tipo" value="entrada">Entrada</button>
-            <button name="tipo" value="salida">Salida</button>
+            <br><br>
+
+            <button name="tipo" value="entrada" style="padding:10px; background:green; color:white;">
+                Marcar Entrada
+            </button>
+
+            <button name="tipo" value="salida" style="padding:10px; background:red; color:white;">
+                Marcar Salida
+            </button>
+
         </form>
+
+        <br>
+        <a href="/exportar" style="color:lightblue;">Descargar Excel</a>
+
     </body>
     </html>
     """
 
+# ===============================
+# REGISTRAR
+# ===============================
 @app.route("/registrar", methods=["POST"])
 def registrar():
     codigo = request.form["codigo"]
@@ -93,7 +118,7 @@ def registrar():
             mensaje = "No hay entrada registrada ⚠️"
         color = "red"
 
-    # Guardar local
+    # Guardar en memoria
     registros.append({
         "codigo": codigo,
         "tipo": tipo,
@@ -102,7 +127,7 @@ def registrar():
         "horas_trabajadas": horas_trabajadas
     })
 
-    # Guardar en Google Sheets (si está disponible)
+    # Guardar en Google Sheets
     if sheet:
         try:
             sheet.append_row([
@@ -112,8 +137,8 @@ def registrar():
                 ahora.strftime("%Y-%m-%d %H:%M:%S"),
                 horas_trabajadas
             ])
-        except:
-            pass
+        except Exception as e:
+            print("Error guardando en Sheets:", e)
 
     return f"""
     <html>
@@ -127,16 +152,16 @@ def registrar():
             }}
         </script>
 
-        <a href="/">Volver</a>
+        <br><br>
+        <a href="/" style="color:lightblue;">Volver</a>
 
     </body>
     </html>
     """
 
-@app.route("/registros")
-def ver_registros():
-    return jsonify(registros)
-
+# ===============================
+# EXPORTAR
+# ===============================
 @app.route("/exportar")
 def exportar():
     df = pd.DataFrame(registros)
@@ -144,5 +169,8 @@ def exportar():
     df.to_excel(archivo, index=False)
     return send_file(archivo, as_attachment=True)
 
+# ===============================
+# RUN
+# ===============================
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
