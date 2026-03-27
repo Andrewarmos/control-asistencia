@@ -11,7 +11,18 @@ try:
     scope = ["https://spreadsheets.google.com/feeds",
              "https://www.googleapis.com/auth/drive"]
 
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credenciales.json", scope)
+    import os
+import json
+
+credenciales_json = os.getenv("GOOGLE_CREDENTIALS")
+
+if credenciales_json:
+    credenciales_dict = json.loads(credenciales_json)
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(credenciales_dict, scope)
+    client = gspread.authorize(creds)
+    sheet = client.open("Control Asistencia ARMOS").sheet1
+else:
+    sheet = None
     client = gspread.authorize(creds)
     sheet = client.open("Control Asistencia ARMOS").sheet1
 except:
