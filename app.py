@@ -15,7 +15,7 @@ empleados = [
     {"codigo": "44567", "nombre": "CARLOS RAMIREZ"}
 ]
 
-# Página principal
+# Página principal (DISEÑO MEJORADO)
 @app.route("/")
 def inicio():
     opciones = ""
@@ -23,28 +23,112 @@ def inicio():
         opciones += f"<option value='{emp['codigo']}'>{emp['codigo']} - {emp['nombre']}</option>"
 
     return f"""
-    <h1>Bienvenido a ARMOS</h1>
+    <html>
+    <head>
+        <title>ARMOS</title>
+        <style>
+            body {{
+                font-family: Arial;
+                background-color: #f4f6f8;
+                text-align: center;
+                padding: 20px;
+            }}
 
-    <form action="/registrar" method="post">
-        <label>Empleado:</label><br>
-        <select name="codigo">
-            {opciones}
-        </select><br><br>
+            .container {{
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                max-width: 400px;
+                margin: auto;
+                box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+            }}
 
-        <label>Ubicación:</label><br>
-        <select name="ubicacion">
-            <option value="Redfern">Edificio Redfern</option>
-            <option value="Mascot">Edificio Mascot</option>
-            <option value="Otro">Otro</option>
-        </select><br><br>
+            h1 {{
+                color: #2c3e50;
+            }}
 
-        <button type="submit" name="tipo" value="entrada">Marcar Entrada</button>
-        <button type="submit" name="tipo" value="salida">Marcar Salida</button>
-    </form>
+            select {{
+                width: 100%;
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 5px;
+                border: 1px solid #ccc;
+            }}
 
-    <br>
-    <a href="/registros">Ver registros</a><br>
-    <a href="/exportar">Descargar Excel</a>
+            button {{
+                width: 48%;
+                padding: 12px;
+                margin: 5px;
+                border: none;
+                border-radius: 5px;
+                font-size: 16px;
+                cursor: pointer;
+            }}
+
+            .entrada {{
+                background-color: #27ae60;
+                color: white;
+            }}
+
+            .salida {{
+                background-color: #c0392b;
+                color: white;
+            }}
+
+            a {{
+                display: block;
+                margin-top: 10px;
+                color: #2980b9;
+                text-decoration: none;
+            }}
+
+            a:hover {{
+                text-decoration: underline;
+            }}
+
+        </style>
+    </head>
+
+    <body>
+
+        <div class="container">
+
+            <h1>Bienvenido a ARMOS</h1>
+
+            <!-- Aquí puedes agregar tu logo después -->
+            <!-- <img src="URL_DEL_LOGO" width="120"> -->
+
+            <form action="/registrar" method="post">
+
+                <label>Empleado:</label>
+                <select name="codigo">
+                    {opciones}
+                </select>
+
+                <label>Ubicación:</label>
+                <select name="ubicacion">
+                    <option value="Redfern">Edificio Redfern</option>
+                    <option value="Mascot">Edificio Mascot</option>
+                    <option value="Otro">Otro</option>
+                </select>
+
+                <button class="entrada" type="submit" name="tipo" value="entrada">
+                    Entrada
+                </button>
+
+                <button class="salida" type="submit" name="tipo" value="salida">
+                    Salida
+                </button>
+
+            </form>
+
+            <a href="/registros">Ver registros</a>
+            <a href="/exportar">Descargar Excel</a>
+
+        </div>
+
+    </body>
+    </html>
     """
 
 # Registrar entrada o salida
