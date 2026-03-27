@@ -4,21 +4,23 @@ import pandas as pd
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
-scope = ["https://spreadsheets.google.com/feeds",
-         "https://www.googleapis.com/auth/drive"]
-
-creds = ServiceAccountCredentials.from_json_keyfile_name("credenciales.json", scope)
-client = gspread.authorize(creds)
-
-sheet = client.open("Control Asistencia ARMOS").sheet1
-
 app = Flask(__name__)
 
-# Base de datos temporal
-registros = []
-entradas = {}  # guarda la última entrada por empleado
+# Google Sheets conexión (solo funcionará local por ahora)
+try:
+    scope = ["https://spreadsheets.google.com/feeds",
+             "https://www.googleapis.com/auth/drive"]
 
-# Lista de empleados
+    creds = ServiceAccountCredentials.from_json_keyfile_name("credenciales.json", scope)
+    client = gspread.authorize(creds)
+    sheet = client.open("Control Asistencia ARMOS").sheet1
+except:
+    sheet = None  # evita que falle en Render
+
+# Datos en memoria
+registros = []
+entradas = {}
+
 empleados = [
     {"codigo": "13434", "nombre": "ANDRIW SOCHA"},
     {"codigo": "22345", "nombre": "JUAN PEREZ"},
@@ -26,7 +28,6 @@ empleados = [
     {"codigo": "44567", "nombre": "CARLOS RAMIREZ"}
 ]
 
-# Página principal
 @app.route("/")
 def inicio():
     opciones = ""
@@ -35,81 +36,26 @@ def inicio():
 
     return f"""
     <html>
-    <head>
-        <title>ARMOS</title>
-        <style>
-            body {{
-                font-family: Arial;
-                background-color: #1c1f26;
-                color: white;
-                text-align: center;
-                padding: 20px;
-            }}
+    <body style="font-family: Arial; background:#1c1f26; color:white; text-align:center; padding:20px;">
+        <img src="/static/logo.png" width="150">
+        <h1>Bienvenido a ARMOS</h1>
 
-            .container {{
-                background: #2a2f3a;
-                padding: 30px;
-                border-radius: 15px;
-                max-width: 400px;
-                margin: auto;
-            }}
+        <form action="/registrar" method="post">
+            <select name="codigo">{opciones}</select>
 
-            img {{ width: 150px; }}
+            <select name="ubicacion">
+                <option value="Redfern">Redfern</option>
+                <option value="Mascot">Mascot</option>
+                <option value="Otro">Otro</option>
+            </select>
 
-            select {{
-                width: 100%;
-                padding: 12px;
-                margin: 10px 0;
-                border-radius: 8px;
-                border: none;
-            }}
-
-            button {{
-                width: 100%;
-                padding: 14px;
-                margin-top: 10px;
-                border: none;
-                border-radius: 8px;
-                font-size: 16px;
-                font-weight: bold;
-                cursor: pointer;
-            }}
-
-            .entrada {{ background-color: #27ae60; }}
-            .salida {{ background-color: #e74c3c; }}
-        </style>
-    </head>
-
-    <body>
-        <div class="container">
-            <img src="/static/logo.png">
-            <h1>Bienvenido a ARMOS</h1>
-
-            <form action="/registrar" method="post">
-                <label>Empleado</label>
-                <select name="codigo">{opciones}</select>
-
-                <label>Ubicación</label>
-                <select name="ubicacion">
-                    <option value="Redfern">Redfern</option>
-                    <option value="Mascot">Mascot</option>
-                    <option value="Otro">Otro</option>
-                </select>
-
-                <button class="entrada" type="submit" name="tipo" value="entrada">
-                    Marcar Entrada
-                </button>
-
-                <button class="salida" type="submit" name="tipo" value="salida">
-                    Marcar Salida
-                </button>
-            </form>
-        </div>
+            <button name="tipo" value="entrada">Entrada</button>
+            <button name="tipo" value="salida">Salida</button>
+        </form>
     </body>
     </html>
     """
 
-# Registrar
 @app.route("/registrar", methods=["POST"])
 def registrar():
     codigo = request.form["codigo"]
@@ -117,51 +63,46 @@ def registrar():
     tipo = request.form["tipo"]
     ahora = datetime.now()
 
-    mensaje = ""
     horas_trabajadas = ""
 
     if tipo == "entrada":
         entradas[codigo] = ahora
         mensaje = "Feliz inicio de turno 👋"
-        color = "#27ae60"
-
-        registros.append({
-            "codigo": codigo,
-            "tipo": "entrada",
-            "ubicacion": ubicacion,
-            "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
-            "horas_trabajadas": ""
-        })
-
-    sheet.append_row([
-    codigo,
-    tipo,
-    ubicacion,
-    ahora.strftime("%Y-%m-%d %H:%M:%S"),
-    horas_trabajadas
-])
+        color = "green"
 
     else:
-        color = "#e74c3c"
-
         if codigo in entradas:
             inicio = entradas[codigo]
             diferencia = ahora - inicio
             horas = round(diferencia.total_seconds() / 3600, 2)
             horas_trabajadas = f"{horas} horas"
             mensaje = f"Gracias por tu ayuda 🙌<br>Trabajaste: {horas} horas"
-
             del entradas[codigo]
         else:
             mensaje = "No hay entrada registrada ⚠️"
+        color = "red"
 
-        registros.append({
-            "codigo": codigo,
-            "tipo": "salida",
-            "ubicacion": ubicacion,
-            "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
-            "horas_trabajadas": horas_trabajadas
-        })
+    # Guardar local
+    registros.append({
+        "codigo": codigo,
+        "tipo": tipo,
+        "ubicacion": ubicacion,
+        "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
+        "horas_trabajadas": horas_trabajadas
+    })
+
+    # Guardar en Google Sheets (si está disponible)
+    if sheet:
+        try:
+            sheet.append_row([
+                codigo,
+                tipo,
+                ubicacion,
+                ahora.strftime("%Y-%m-%d %H:%M:%S"),
+                horas_trabajadas
+            ])
+        except:
+            pass
 
     return f"""
     <html>
@@ -175,19 +116,16 @@ def registrar():
             }}
         </script>
 
-        <br>
-        <a href="/" style="color:#3498db; font-size:18px;">Volver</a>
+        <a href="/">Volver</a>
 
     </body>
     </html>
     """
 
-# Ver registros
 @app.route("/registros")
 def ver_registros():
     return jsonify(registros)
 
-# Exportar
 @app.route("/exportar")
 def exportar():
     df = pd.DataFrame(registros)
@@ -195,7 +133,5 @@ def exportar():
     df.to_excel(archivo, index=False)
     return send_file(archivo, as_attachment=True)
 
-# Run
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
-
