@@ -15,7 +15,7 @@ empleados = [
     {"codigo": "44567", "nombre": "CARLOS RAMIREZ"}
 ]
 
-# Página principal (DISEÑO MEJORADO)
+# Página principal
 @app.route("/")
 def inicio():
     opciones = ""
@@ -29,39 +29,47 @@ def inicio():
         <style>
             body {{
                 font-family: Arial;
-                background-color: #f4f6f8;
+                background-color: #1c1f26;
+                color: white;
                 text-align: center;
                 padding: 20px;
             }}
 
             .container {{
-                background: white;
+                background: #2a2f3a;
                 padding: 30px;
-                border-radius: 10px;
+                border-radius: 15px;
                 max-width: 400px;
                 margin: auto;
-                box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+                box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+            }}
+
+            img {{
+                width: 150px;
+                margin-bottom: 10px;
             }}
 
             h1 {{
-                color: #2c3e50;
+                margin-bottom: 20px;
             }}
 
             select {{
                 width: 100%;
-                padding: 10px;
+                padding: 12px;
                 margin: 10px 0;
-                border-radius: 5px;
-                border: 1px solid #ccc;
+                border-radius: 8px;
+                border: none;
+                font-size: 14px;
             }}
 
             button {{
-                width: 48%;
-                padding: 12px;
-                margin: 5px;
+                width: 100%;
+                padding: 14px;
+                margin-top: 10px;
                 border: none;
-                border-radius: 5px;
+                border-radius: 8px;
                 font-size: 16px;
+                font-weight: bold;
                 cursor: pointer;
             }}
 
@@ -71,21 +79,20 @@ def inicio():
             }}
 
             .salida {{
-                background-color: #c0392b;
+                background-color: #e74c3c;
                 color: white;
             }}
 
             a {{
                 display: block;
-                margin-top: 10px;
-                color: #2980b9;
+                margin-top: 15px;
+                color: #3498db;
                 text-decoration: none;
             }}
 
             a:hover {{
                 text-decoration: underline;
             }}
-
         </style>
     </head>
 
@@ -93,19 +100,18 @@ def inicio():
 
         <div class="container">
 
-            <h1>Bienvenido a ARMOS</h1>
+            <img src="/static/logo.png">
 
-            <!-- Aquí puedes agregar tu logo después -->
-            <!-- <img src="URL_DEL_LOGO" width="120"> -->
+            <h1>Bienvenido a ARMOS</h1>
 
             <form action="/registrar" method="post">
 
-                <label>Empleado:</label>
+                <label>Empleado</label>
                 <select name="codigo">
                     {opciones}
                 </select>
 
-                <label>Ubicación:</label>
+                <label>Ubicación</label>
                 <select name="ubicacion">
                     <option value="Redfern">Edificio Redfern</option>
                     <option value="Mascot">Edificio Mascot</option>
@@ -113,11 +119,11 @@ def inicio():
                 </select>
 
                 <button class="entrada" type="submit" name="tipo" value="entrada">
-                    Entrada
+                    Marcar Entrada
                 </button>
 
                 <button class="salida" type="submit" name="tipo" value="salida">
-                    Salida
+                    Marcar Salida
                 </button>
 
             </form>
@@ -131,7 +137,7 @@ def inicio():
     </html>
     """
 
-# Registrar entrada o salida
+# Registrar
 @app.route("/registrar", methods=["POST"])
 def registrar():
     codigo = request.form["codigo"]
@@ -153,7 +159,7 @@ def registrar():
 def ver_registros():
     return jsonify(registros)
 
-# Exportar a Excel
+# Exportar
 @app.route("/exportar")
 def exportar():
     df = pd.DataFrame(registros)
@@ -161,6 +167,6 @@ def exportar():
     df.to_excel(archivo, index=False)
     return send_file(archivo, as_attachment=True)
 
-# Para Render
+# Run
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
