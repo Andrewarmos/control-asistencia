@@ -6,6 +6,7 @@ app = Flask(__name__)
 
 # Base de datos temporal
 registros = []
+entradas = {}  # guarda la última entrada por empleado
 
 # Lista de empleados
 empleados = [
@@ -41,17 +42,9 @@ def inicio():
                 border-radius: 15px;
                 max-width: 400px;
                 margin: auto;
-                box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
             }}
 
-            img {{
-                width: 150px;
-                margin-bottom: 10px;
-            }}
-
-            h1 {{
-                margin-bottom: 20px;
-            }}
+            img {{ width: 150px; }}
 
             select {{
                 width: 100%;
@@ -59,7 +52,6 @@ def inicio():
                 margin: 10px 0;
                 border-radius: 8px;
                 border: none;
-                font-size: 14px;
             }}
 
             button {{
@@ -73,48 +65,24 @@ def inicio():
                 cursor: pointer;
             }}
 
-            .entrada {{
-                background-color: #27ae60;
-                color: white;
-            }}
-
-            .salida {{
-                background-color: #e74c3c;
-                color: white;
-            }}
-
-            a {{
-                display: block;
-                margin-top: 15px;
-                color: #3498db;
-                text-decoration: none;
-            }}
-
-            a:hover {{
-                text-decoration: underline;
-            }}
+            .entrada {{ background-color: #27ae60; }}
+            .salida {{ background-color: #e74c3c; }}
         </style>
     </head>
 
     <body>
-
         <div class="container">
-
             <img src="/static/logo.png">
-
             <h1>Bienvenido a ARMOS</h1>
 
             <form action="/registrar" method="post">
-
                 <label>Empleado</label>
-                <select name="codigo">
-                    {opciones}
-                </select>
+                <select name="codigo">{opciones}</select>
 
                 <label>Ubicación</label>
                 <select name="ubicacion">
-                    <option value="Redfern">Edificio Redfern</option>
-                    <option value="Mascot">Edificio Mascot</option>
+                    <option value="Redfern">Redfern</option>
+                    <option value="Mascot">Mascot</option>
                     <option value="Otro">Otro</option>
                 </select>
 
@@ -125,14 +93,8 @@ def inicio():
                 <button class="salida" type="submit" name="tipo" value="salida">
                     Marcar Salida
                 </button>
-
             </form>
-
-            <a href="/registros">Ver registros</a>
-            <a href="/exportar">Descargar Excel</a>
-
         </div>
-
     </body>
     </html>
     """
@@ -143,16 +105,64 @@ def registrar():
     codigo = request.form["codigo"]
     ubicacion = request.form["ubicacion"]
     tipo = request.form["tipo"]
-    hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ahora = datetime.now()
 
-    registros.append({
-        "codigo": codigo,
-        "tipo": tipo,
-        "ubicacion": ubicacion,
-        "hora": hora
-    })
+    mensaje = ""
+    horas_trabajadas = ""
 
-    return f"{tipo.capitalize()} registrada ✔<br><a href='/'>Volver</a>"
+    if tipo == "entrada":
+        entradas[codigo] = ahora
+        mensaje = "Feliz inicio de turno 👋"
+        color = "#27ae60"
+
+        registros.append({
+            "codigo": codigo,
+            "tipo": "entrada",
+            "ubicacion": ubicacion,
+            "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
+            "horas_trabajadas": ""
+        })
+
+    else:
+        color = "#e74c3c"
+
+        if codigo in entradas:
+            inicio = entradas[codigo]
+            diferencia = ahora - inicio
+            horas = round(diferencia.total_seconds() / 3600, 2)
+            horas_trabajadas = f"{horas} horas"
+            mensaje = f"Gracias por tu ayuda 🙌<br>Trabajaste: {horas} horas"
+
+            del entradas[codigo]
+        else:
+            mensaje = "No hay entrada registrada ⚠️"
+
+        registros.append({
+            "codigo": codigo,
+            "tipo": "salida",
+            "ubicacion": ubicacion,
+            "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
+            "horas_trabajadas": horas_trabajadas
+        })
+
+    return f"""
+    <html>
+    <body style="font-family: Arial; background:#1c1f26; color:white; text-align:center; padding:50px;">
+        
+        <h1 style="color:{color};">{mensaje}</h1>
+
+        <script>
+            if (navigator.vibrate) {{
+                navigator.vibrate(200);
+            }}
+        </script>
+
+        <br>
+        <a href="/" style="color:#3498db; font-size:18px;">Volver</a>
+
+    </body>
+    </html>
+    """
 
 # Ver registros
 @app.route("/registros")
