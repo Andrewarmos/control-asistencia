@@ -7,7 +7,7 @@ app = Flask(__name__)
 # Base de datos temporal
 registros = []
 
-# Lista de empleados (puedes editar esto)
+# Lista de empleados
 empleados = [
     {"codigo": "13434", "nombre": "ANDRIW SOCHA"},
     {"codigo": "22345", "nombre": "JUAN PEREZ"},
@@ -25,7 +25,7 @@ def inicio():
     return f"""
     <h1>Bienvenido a ARMOS</h1>
 
-    <form action="/entrada" method="post">
+    <form action="/registrar" method="post">
         <label>Empleado:</label><br>
         <select name="codigo">
             {opciones}
@@ -38,25 +38,8 @@ def inicio():
             <option value="Otro">Otro</option>
         </select><br><br>
 
-        <button type="submit">Marcar Entrada</button>
-    </form>
-
-    <br><br>
-
-    <form action="/salida" method="post">
-        <label>Empleado:</label><br>
-        <select name="codigo">
-            {opciones}
-        </select><br><br>
-
-        <label>Ubicación:</label><br>
-        <select name="ubicacion">
-            <option value="Redfern">Edificio Redfern</option>
-            <option value="Mascot">Edificio Mascot</option>
-            <option value="Otro">Otro</option>
-        </select><br><br>
-
-        <button type="submit">Marcar Salida</button>
+        <button type="submit" name="tipo" value="entrada">Marcar Entrada</button>
+        <button type="submit" name="tipo" value="salida">Marcar Salida</button>
     </form>
 
     <br>
@@ -64,37 +47,22 @@ def inicio():
     <a href="/exportar">Descargar Excel</a>
     """
 
-# Registrar entrada
-@app.route("/entrada", methods=["POST"])
-def entrada():
+# Registrar entrada o salida
+@app.route("/registrar", methods=["POST"])
+def registrar():
     codigo = request.form["codigo"]
     ubicacion = request.form["ubicacion"]
+    tipo = request.form["tipo"]
     hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     registros.append({
         "codigo": codigo,
-        "tipo": "entrada",
+        "tipo": tipo,
         "ubicacion": ubicacion,
         "hora": hora
     })
 
-    return "Entrada registrada ✔<br><a href='/'>Volver</a>"
-
-# Registrar salida
-@app.route("/salida", methods=["POST"])
-def salida():
-    codigo = request.form["codigo"]
-    ubicacion = request.form["ubicacion"]
-    hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    registros.append({
-        "codigo": codigo,
-        "tipo": "salida",
-        "ubicacion": ubicacion,
-        "hora": hora
-    })
-
-    return "Salida registrada ✔<br><a href='/'>Volver</a>"
+    return f"{tipo.capitalize()} registrada ✔<br><a href='/'>Volver</a>"
 
 # Ver registros
 @app.route("/registros")
