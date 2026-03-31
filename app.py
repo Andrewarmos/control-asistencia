@@ -166,7 +166,7 @@ def inicio():
 
             </form>
 
-            <a href="/exportar">Descargar Excel</a>
+    
         </div>
 
     </body>
@@ -241,15 +241,7 @@ def registrar():
     </html>
     """
 
-# ===============================
-# EXPORTAR
-# ===============================
-@app.route("/exportar")
-def exportar():
-    df = pd.DataFrame(registros)
-    archivo = "registros.xlsx"
-    df.to_excel(archivo, index=False)
-    return send_file(archivo, as_attachment=True)
+
 
 # ===============================
 # RUN
