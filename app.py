@@ -45,7 +45,7 @@ empleados = [
 ]
 
 # ===============================
-# HOME
+# HOME (MEJORADO)
 # ===============================
 @app.route("/")
 def inicio():
@@ -55,35 +55,119 @@ def inicio():
 
     return f"""
     <html>
-    <body style="font-family: Arial; background:#1c1f26; color:white; text-align:center; padding:20px;">
-        
-        <img src="/static/logo.png" width="150">
-        <h1>Bienvenido a ARMOS</h1>
+    <head>
+        <style>
+            body {{
+                margin: 0;
+                font-family: Arial, sans-serif;
+                background: linear-gradient(135deg, #1c1f26, #2c3e50);
+                color: white;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }}
 
-        <form action="/registrar" method="post">
+            .container {{
+                background: #2b2f38;
+                padding: 30px;
+                border-radius: 15px;
+                box-shadow: 0 0 20px rgba(0,0,0,0.5);
+                text-align: center;
+                width: 320px;
+            }}
 
-            <select name="codigo">{opciones}</select>
+            img {{
+                width: 120px;
+                margin-bottom: 10px;
+            }}
 
-            <select name="ubicacion">
-                <option value="Redfern">Redfern</option>
-                <option value="Mascot">Mascot</option>
-                <option value="Otro">Otro</option>
-            </select>
+            h2 {{
+                margin-bottom: 20px;
+            }}
 
-            <br><br>
+            select {{
+                width: 100%;
+                padding: 10px;
+                margin: 8px 0;
+                border-radius: 8px;
+                border: none;
+                font-size: 14px;
+            }}
 
-            <button name="tipo" value="entrada" style="padding:10px; background:green; color:white;">
-                Marcar Entrada
-            </button>
+            .buttons {{
+                margin-top: 15px;
+                display: flex;
+                gap: 10px;
+            }}
 
-            <button name="tipo" value="salida" style="padding:10px; background:red; color:white;">
-                Marcar Salida
-            </button>
+            button {{
+                flex: 1;
+                padding: 12px;
+                border: none;
+                border-radius: 10px;
+                font-size: 14px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: 0.2s;
+            }}
 
-        </form>
+            .entrada {{
+                background: #2ecc71;
+                color: white;
+            }}
 
-        <br>
-        <a href="/exportar" style="color:lightblue;">Descargar Excel</a>
+            .entrada:hover {{
+                background: #27ae60;
+            }}
+
+            .salida {{
+                background: #e74c3c;
+                color: white;
+            }}
+
+            .salida:hover {{
+                background: #c0392b;
+            }}
+
+            a {{
+                display: block;
+                margin-top: 20px;
+                color: #00c3ff;
+                text-decoration: none;
+            }}
+
+            a:hover {{
+                text-decoration: underline;
+            }}
+        </style>
+    </head>
+
+    <body>
+
+        <div class="container">
+            <img src="/static/logo.png">
+            <h2>Bienvenido a ARMOS</h2>
+
+            <form action="/registrar" method="post">
+
+                <select name="codigo">{opciones}</select>
+
+                <select name="ubicacion">
+                    <option value="Redfern">Redfern</option>
+                    <option value="Mascot">Mascot</option>
+                    <option value="Otro">Otro</option>
+                </select>
+
+                <div class="buttons">
+                    <button class="entrada" name="tipo" value="entrada">Entrada</button>
+                    <button class="salida" name="tipo" value="salida">Salida</button>
+                </div>
+
+            </form>
+
+            <a href="/exportar">Descargar Excel</a>
+        </div>
 
     </body>
     </html>
@@ -118,7 +202,6 @@ def registrar():
             mensaje = "No hay entrada registrada ⚠️"
         color = "red"
 
-    # Guardar en memoria
     registros.append({
         "codigo": codigo,
         "tipo": tipo,
@@ -127,7 +210,6 @@ def registrar():
         "horas_trabajadas": horas_trabajadas
     })
 
-    # Guardar en Google Sheets
     if sheet:
         try:
             sheet.append_row([
