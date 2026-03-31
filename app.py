@@ -33,7 +33,6 @@ except Exception as e:
 # ===============================
 # DATOS
 # ===============================
-registros = []
 entradas = {}
 
 empleados = [
@@ -44,11 +43,11 @@ empleados = [
 ]
 
 # ===============================
-# HOME
+# HOME (MEJORADO)
 # ===============================
 @app.route("/")
 def inicio():
-    opciones = ""
+    opciones = "<option value='' disabled selected>Seleccione su nombre</option>"
     for emp in empleados:
         opciones += f"<option value='{emp['codigo']}'>{emp['codigo']} - {emp['nombre']}</option>"
 
@@ -78,6 +77,7 @@ def inicio():
 
             img {{
                 width: 120px;
+                margin-bottom: 10px;
             }}
 
             select, input {{
@@ -105,7 +105,27 @@ def inicio():
 
             .entrada {{ background: #2ecc71; }}
             .salida {{ background: #e74c3c; }}
+
+            .label {{
+                font-size: 12px;
+                color: #ccc;
+                margin-top: 10px;
+            }}
         </style>
+
+        <script>
+            function validarFormulario() {{
+                const codigo = document.forms["formulario"]["codigo"].value;
+                const ubicacion = document.forms["formulario"]["ubicacion"].value;
+                const foto = document.forms["formulario"]["foto"].value;
+
+                if (!codigo || !ubicacion || !foto) {{
+                    alert("⚠️ Debes completar todos los campos antes de continuar");
+                    return false;
+                }}
+                return true;
+            }}
+        </script>
     </head>
 
     <body>
@@ -113,19 +133,30 @@ def inicio():
             <img src="/static/logo.png">
             <h2>Bienvenido a ARMOS</h2>
 
-            <form action="/registrar" method="post" enctype="multipart/form-data">
+            <form name="formulario" action="/registrar" method="post" enctype="multipart/form-data" onsubmit="return validarFormulario()">
 
-                <select name="codigo">{opciones}</select>
+                <!-- EMPLEADO -->
+                <select name="codigo" required>
+                    {opciones}
+                </select>
 
-                <select name="ubicacion">
+                <!-- UBICACION -->
+                <select name="ubicacion" required>
+                    <option value="" disabled selected>Seleccione su ubicación</option>
                     <option value="Redfern">Redfern</option>
                     <option value="Mascot">Mascot</option>
                     <option value="Otro">Otro</option>
                 </select>
 
-                <!-- FOTO -->
-                <input type="file" name="foto" accept="image/*" capture="environment">
+                <!-- TEXTO FOTO -->
+                <div class="label">
+                    Por favor, adjunte evidencia fotográfica con la aplicación correspondiente
+                </div>
 
+                <!-- FOTO -->
+                <input type="file" name="foto" accept="image/*" capture="environment" required>
+
+                <!-- BOTONES -->
                 <div class="buttons">
                     <button class="entrada" name="tipo" value="entrada">Entrada</button>
                     <button class="salida" name="tipo" value="salida">Salida</button>
@@ -142,19 +173,20 @@ def inicio():
 # ===============================
 @app.route("/registrar", methods=["POST"])
 def registrar():
-    codigo = request.form["codigo"]
-    ubicacion = request.form["ubicacion"]
-    tipo = request.form["tipo"]
+    codigo = request.form.get("codigo")
+    ubicacion = request.form.get("ubicacion")
+    tipo = request.form.get("tipo")
     ahora = datetime.now()
 
-    # 📸 FOTO
-    foto = request.files.get("foto")
-    nombre_foto = ""
+    # Validación backend (extra seguridad)
+    if not codigo or not ubicacion or "foto" not in request.files:
+        return "Error: datos incompletos"
 
-    if foto:
-        nombre_foto = f"foto_{codigo}_{ahora.strftime('%Y%m%d%H%M%S')}.jpg"
-        ruta = os.path.join("static", nombre_foto)
-        foto.save(ruta)
+    # FOTO
+    foto = request.files["foto"]
+    nombre_foto = f"foto_{codigo}_{ahora.strftime('%Y%m%d%H%M%S')}.jpg"
+    ruta = os.path.join("static", nombre_foto)
+    foto.save(ruta)
 
     horas_trabajadas = ""
 
@@ -167,7 +199,7 @@ def registrar():
         else:
             entradas[codigo] = ahora
             mensaje = "Feliz inicio de turno 👋"
-            color = "green"
+            color = "#2ecc71"
 
             if sheet:
                 try:
@@ -195,7 +227,7 @@ def registrar():
             horas_trabajadas = f"{horas} horas"
 
             mensaje = f"Gracias por tu ayuda 🙌<br>Trabajaste: {horas} horas"
-            color = "red"
+            color = "#e74c3c"
 
             del entradas[codigo]
 
