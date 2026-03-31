@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "learned-now-491503-b1",
+  "private_key_id": "14bafbeb60db386decced1dcb84aee8c5a6f8910",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQD5Z0BC85cOiy/o\nV1LjgUIakES64GyYueLbeL2Cq1xZ5Ogpa2btv9w4K4rbsZ9Hsw2ekmjreFXD5zzv\nmesb2gukIZGglMAmti+N4uKadbzUpjRkkEU67Ei/rom5AoLH+eHHs8ED0R/7b3l3\nyBl0VoQVONeyqYkuyEQgwhqkVUao8IUGvIUYUrxAShPXD8LIGNQqT4E1kvPnJLNU\nj40CuhW8ud1dsV7mmDXSypgTP5O/wvUb1AA/oukYKl1FeYgczDrrOUfK5ikfZzC7\nuEOmy81kYZyX6czK9DF8oczzqAhcgBSZVinORn7u+2Q6h7KMVXSO6Bmuf80/n2IJ\nR77zDX3pAgMBAAECggEABqAcj+rCr4s5CZYQSKTtaaE9gi1mFSSTBzuM5UTCHk07\ncaY9xMEdC4z0kmOElLYH/ZdsHB1FQgAJmV/gZAwF1SVjJf3toNmkJ8PIO0w3aPrF\nV4qRnEAcqqLrW7PaX4+e1NxMm1pZ3CcY9fql2nZV6e5ppIBmeYyuaqRdatItH12+\n7fTIGgZ7NoGG9yNZdddUnUmfL79hUEgxnbNXLhM+fV2Co2g2euoBYTTgKNH3ad3b\nmYHQd+uErcbwkYFq5Cg8vsbcB6dx5ehnKHryIy7TBWaBr37qJ/tdwseqK62oX4fG\nMQ9L5Fu92L1JY6hxX2QeAQxlnj626vnX8TNOWUhOdQKBgQD+8JTJtymj6dq8Zw5l\nLFn1yJMZj6/34GMnBvN/1iuBdpHraHta0xfG9sMx1qeW6IpyWobfb7kL/+MF2yX5\niVmchp1ZqqwKcT4emCtISBdQhLOlUNijUIQT7rsoU0VOnqN3yh1NV36t2gQmunCn\nfBGebG9CAsaK5MM7ZtXTEx5oMwKBgQD6cMaHWuYn7QtIorBB77y+PFpCGRWO0uw0\niN+1VDInX5gjOqL9lnHVK2TdPQQtGFIHCgay3SY1t7psq8MaebJNXu6+QwGTFe2C\nWVpPBJLuprJdUwlF32ECCTTgbBBf3xJS3y2LyenA1ijGQep8Kcc73QJgLajp4ZXg\nfTT3HEWVcwKBgEM1LzRCOhMBKm3yiSP43jpiRw09CPnCyMDYH0c7MbruhCdYIvTd\no24LTYgM+59X7G+bF+U9cb4NFk9L56XyJJKUFlU2Hiaele7A1OA4SRUr9qQFPSdI\nqZkLnYFS+nlwbs28lZ73CulQCTogemRc29Q059uyGZ8yEZnOUV5UsvZrAoGBAMJT\n4ejDotWWPOw2uPfg857Vq9+gITc6+WfmUVgdpfEhXybu5+xH4bpcOp7lKqlnNrcZ\nk4sUyQJjtzd9rB2OEsmwgSaHTeB44lwDw2yPCwg9tydtOEPMijSPOkVt9OK/cDN3\n05qlqUklpGv6V93SeTM9UguZQnmAvtB7ty6L9H57AoGBAI4SVv0Ak5DjkHXjzaJU\nAw4hFf9+1ZZ5D15hj0J38ronJJmwKmkGCIwfqAz5vlnf2E+zbvaeE0tpZtYlqvGb\niddFgWYdbd9e1kes6iOqO5wflj9RyEzXNvyEIt7T9xkS+e+v3as9Nfo+6hy818px\n4JktcoXkmDtzUqVcKg3/T2A5\n-----END PRIVATE KEY-----\n",
+  "client_email": "nombre-armos-bot@learned-now-491503-b1.iam.gserviceaccount.com",
+  "client_id": "111333646926131496321",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/nombre-armos-bot%40learned-now-491503-b1.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
