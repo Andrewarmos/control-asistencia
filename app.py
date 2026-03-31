@@ -1,6 +1,5 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request
 from datetime import datetime
-import pandas as pd
 import os
 import json
 import gspread
@@ -9,7 +8,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 app = Flask(__name__)
 
 # ===============================
-# CONEXIÓN GOOGLE SHEETS (PRO)
+# CONEXIÓN GOOGLE SHEETS
 # ===============================
 sheet = None
 
@@ -45,7 +44,7 @@ empleados = [
 ]
 
 # ===============================
-# HOME (MEJORADO)
+# HOME
 # ===============================
 @app.route("/")
 def inicio():
@@ -59,7 +58,7 @@ def inicio():
         <style>
             body {{
                 margin: 0;
-                font-family: Arial, sans-serif;
+                font-family: Arial;
                 background: linear-gradient(135deg, #1c1f26, #2c3e50);
                 color: white;
                 display: flex;
@@ -79,26 +78,20 @@ def inicio():
 
             img {{
                 width: 120px;
-                margin-bottom: 10px;
             }}
 
-            h2 {{
-                margin-bottom: 20px;
-            }}
-
-            select {{
+            select, input {{
                 width: 100%;
                 padding: 10px;
                 margin: 8px 0;
                 border-radius: 8px;
                 border: none;
-                font-size: 14px;
             }}
 
             .buttons {{
-                margin-top: 15px;
                 display: flex;
                 gap: 10px;
+                margin-top: 10px;
             }}
 
             button {{
@@ -106,50 +99,21 @@ def inicio():
                 padding: 12px;
                 border: none;
                 border-radius: 10px;
-                font-size: 14px;
                 font-weight: bold;
                 cursor: pointer;
-                transition: 0.2s;
             }}
 
-            .entrada {{
-                background: #2ecc71;
-                color: white;
-            }}
-
-            .entrada:hover {{
-                background: #27ae60;
-            }}
-
-            .salida {{
-                background: #e74c3c;
-                color: white;
-            }}
-
-            .salida:hover {{
-                background: #c0392b;
-            }}
-
-            a {{
-                display: block;
-                margin-top: 20px;
-                color: #00c3ff;
-                text-decoration: none;
-            }}
-
-            a:hover {{
-                text-decoration: underline;
-            }}
+            .entrada {{ background: #2ecc71; }}
+            .salida {{ background: #e74c3c; }}
         </style>
     </head>
 
     <body>
-
         <div class="container">
             <img src="/static/logo.png">
             <h2>Bienvenido a ARMOS</h2>
 
-            <form action="/registrar" method="post">
+            <form action="/registrar" method="post" enctype="multipart/form-data">
 
                 <select name="codigo">{opciones}</select>
 
@@ -159,16 +123,16 @@ def inicio():
                     <option value="Otro">Otro</option>
                 </select>
 
+                <!-- FOTO -->
+                <input type="file" name="foto" accept="image/*" capture="environment">
+
                 <div class="buttons">
                     <button class="entrada" name="tipo" value="entrada">Entrada</button>
                     <button class="salida" name="tipo" value="salida">Salida</button>
                 </div>
 
             </form>
-
-    
         </div>
-
     </body>
     </html>
     """
@@ -176,18 +140,26 @@ def inicio():
 # ===============================
 # REGISTRAR
 # ===============================
-@@app.route("/registrar", methods=["POST"])
+@app.route("/registrar", methods=["POST"])
 def registrar():
     codigo = request.form["codigo"]
     ubicacion = request.form["ubicacion"]
     tipo = request.form["tipo"]
     ahora = datetime.now()
 
+    # 📸 FOTO
+    foto = request.files.get("foto")
+    nombre_foto = ""
+
+    if foto:
+        nombre_foto = f"foto_{codigo}_{ahora.strftime('%Y%m%d%H%M%S')}.jpg"
+        ruta = os.path.join("static", nombre_foto)
+        foto.save(ruta)
+
     horas_trabajadas = ""
 
     if tipo == "entrada":
 
-        # 🚫 Evitar doble entrada
         if codigo in entradas:
             mensaje = "⚠️ Ya marcaste entrada"
             color = "orange"
@@ -197,14 +169,6 @@ def registrar():
             mensaje = "Feliz inicio de turno 👋"
             color = "green"
 
-            registros.append({
-                "codigo": codigo,
-                "tipo": tipo,
-                "ubicacion": ubicacion,
-                "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
-                "horas_trabajadas": ""
-            })
-
             if sheet:
                 try:
                     sheet.append_row([
@@ -212,14 +176,14 @@ def registrar():
                         tipo,
                         ubicacion,
                         ahora.strftime("%Y-%m-%d %H:%M:%S"),
-                        ""
+                        "",
+                        f"https://control-armos.onrender.com/static/{nombre_foto}"
                     ])
                 except Exception as e:
-                    print("Error guardando en Sheets:", e)
+                    print("Error Sheets:", e)
 
     else:
 
-        # 🚫 Evitar salida sin entrada
         if codigo not in entradas:
             mensaje = "⚠️ Primero debes marcar entrada"
             color = "orange"
@@ -235,14 +199,6 @@ def registrar():
 
             del entradas[codigo]
 
-            registros.append({
-                "codigo": codigo,
-                "tipo": tipo,
-                "ubicacion": ubicacion,
-                "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
-                "horas_trabajadas": horas_trabajadas
-            })
-
             if sheet:
                 try:
                     sheet.append_row([
@@ -250,14 +206,15 @@ def registrar():
                         tipo,
                         ubicacion,
                         ahora.strftime("%Y-%m-%d %H:%M:%S"),
-                        horas_trabajadas
+                        horas_trabajadas,
+                        f"https://control-armos.onrender.com/static/{nombre_foto}"
                     ])
                 except Exception as e:
-                    print("Error guardando en Sheets:", e)
+                    print("Error Sheets:", e)
 
     return f"""
     <html>
-    <body style="font-family: Arial; background:#1c1f26; color:white; text-align:center; padding:50px;">
+    <body style="background:#1c1f26; color:white; text-align:center; padding:50px;">
         
         <h1 style="color:{color};">{mensaje}</h1>
 
@@ -273,8 +230,6 @@ def registrar():
     </body>
     </html>
     """
-
-
 
 # ===============================
 # RUN
