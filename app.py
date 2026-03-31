@@ -1,5 +1,7 @@
 from flask import Flask, request
 from datetime import datetime
+from datetime import datetime
+import pytz
 import os
 import json
 import gspread
@@ -176,7 +178,9 @@ def registrar():
     codigo = request.form.get("codigo")
     ubicacion = request.form.get("ubicacion")
     tipo = request.form.get("tipo")
-    ahora = datetime.now()
+    zona = pytz.timezone('Australia/Sydney')
+    ahora = datetime.now(zona)
+    print("Hora actual:", ahora)
 
     # Validación backend (extra seguridad)
     if not codigo or not ubicacion or "foto" not in request.files:
