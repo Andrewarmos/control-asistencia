@@ -176,7 +176,7 @@ def inicio():
 # ===============================
 # REGISTRAR
 # ===============================
-@app.route("/registrar", methods=["POST"])
+@@app.route("/registrar", methods=["POST"])
 def registrar():
     codigo = request.form["codigo"]
     ubicacion = request.form["ubicacion"]
@@ -186,41 +186,74 @@ def registrar():
     horas_trabajadas = ""
 
     if tipo == "entrada":
-        entradas[codigo] = ahora
-        mensaje = "Feliz inicio de turno 👋"
-        color = "green"
+
+        # 🚫 Evitar doble entrada
+        if codigo in entradas:
+            mensaje = "⚠️ Ya marcaste entrada"
+            color = "orange"
+
+        else:
+            entradas[codigo] = ahora
+            mensaje = "Feliz inicio de turno 👋"
+            color = "green"
+
+            registros.append({
+                "codigo": codigo,
+                "tipo": tipo,
+                "ubicacion": ubicacion,
+                "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
+                "horas_trabajadas": ""
+            })
+
+            if sheet:
+                try:
+                    sheet.append_row([
+                        codigo,
+                        tipo,
+                        ubicacion,
+                        ahora.strftime("%Y-%m-%d %H:%M:%S"),
+                        ""
+                    ])
+                except Exception as e:
+                    print("Error guardando en Sheets:", e)
 
     else:
-        if codigo in entradas:
+
+        # 🚫 Evitar salida sin entrada
+        if codigo not in entradas:
+            mensaje = "⚠️ Primero debes marcar entrada"
+            color = "orange"
+
+        else:
             inicio = entradas[codigo]
             diferencia = ahora - inicio
             horas = round(diferencia.total_seconds() / 3600, 2)
             horas_trabajadas = f"{horas} horas"
+
             mensaje = f"Gracias por tu ayuda 🙌<br>Trabajaste: {horas} horas"
+            color = "red"
+
             del entradas[codigo]
-        else:
-            mensaje = "No hay entrada registrada ⚠️"
-        color = "red"
 
-    registros.append({
-        "codigo": codigo,
-        "tipo": tipo,
-        "ubicacion": ubicacion,
-        "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
-        "horas_trabajadas": horas_trabajadas
-    })
+            registros.append({
+                "codigo": codigo,
+                "tipo": tipo,
+                "ubicacion": ubicacion,
+                "hora": ahora.strftime("%Y-%m-%d %H:%M:%S"),
+                "horas_trabajadas": horas_trabajadas
+            })
 
-    if sheet:
-        try:
-            sheet.append_row([
-                codigo,
-                tipo,
-                ubicacion,
-                ahora.strftime("%Y-%m-%d %H:%M:%S"),
-                horas_trabajadas
-            ])
-        except Exception as e:
-            print("Error guardando en Sheets:", e)
+            if sheet:
+                try:
+                    sheet.append_row([
+                        codigo,
+                        tipo,
+                        ubicacion,
+                        ahora.strftime("%Y-%m-%d %H:%M:%S"),
+                        horas_trabajadas
+                    ])
+                except Exception as e:
+                    print("Error guardando en Sheets:", e)
 
     return f"""
     <html>
