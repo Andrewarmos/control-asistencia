@@ -1,6 +1,5 @@
 from flask import Flask, request
 from datetime import datetime
-from datetime import datetime
 import pytz
 import os
 import json
@@ -38,14 +37,20 @@ except Exception as e:
 entradas = {}
 
 empleados = [
-    {"codigo": "13434", "nombre": "ANDRIW SOCHA"},
-    {"codigo": "22345", "nombre": "JUAN PEREZ"},
-    {"codigo": "33456", "nombre": "MARIA LOPEZ"},
+    {"codigo": "13434", "nombre": "ANDRIW YESID SOCHA TALERO"},
+    {"codigo": "22345", "nombre": "JDANNA VALENTINA GOMEZ NEIRA"},
+    {"codigo": "33456", "nombre": "STEFANY YURLEITH PARRADO PEREZ"},
     {"codigo": "44567", "nombre": "CARLOS RAMIREZ"}
 ]
 
+def obtener_nombre(codigo):
+    for emp in empleados:
+        if emp["codigo"] == codigo:
+            return emp["nombre"]
+    return "Desconocido"
+
 # ===============================
-# HOME (MEJORADO)
+# HOME
 # ===============================
 @app.route("/")
 def inicio():
@@ -137,12 +142,10 @@ def inicio():
 
             <form name="formulario" action="/registrar" method="post" enctype="multipart/form-data" onsubmit="return validarFormulario()">
 
-                <!-- EMPLEADO -->
                 <select name="codigo" required>
                     {opciones}
                 </select>
 
-                <!-- UBICACION -->
                 <select name="ubicacion" required>
                     <option value="" disabled selected>Seleccione su ubicación</option>
                     <option value="Redfern">Redfern</option>
@@ -150,15 +153,12 @@ def inicio():
                     <option value="Otro">Otro</option>
                 </select>
 
-                <!-- TEXTO FOTO -->
                 <div class="label">
                     Por favor, adjunte evidencia fotográfica con la aplicación correspondiente
                 </div>
 
-                <!-- FOTO -->
                 <input type="file" name="foto" accept="image/*" capture="environment" required>
 
-                <!-- BOTONES -->
                 <div class="buttons">
                     <button class="entrada" name="tipo" value="entrada">Entrada</button>
                     <button class="salida" name="tipo" value="salida">Salida</button>
@@ -176,15 +176,18 @@ def inicio():
 @app.route("/registrar", methods=["POST"])
 def registrar():
     codigo = request.form.get("codigo")
+    nombre = obtener_nombre(codigo)
     ubicacion = request.form.get("ubicacion")
     tipo = request.form.get("tipo")
+
     zona = pytz.timezone('Australia/Sydney')
     ahora = datetime.now(zona)
+
     print("Hora actual:", ahora)
 
-    # Validación backend (extra seguridad)
-    if not codigo or not ubicacion or "foto" not in request.files:
-        return "Error: datos incompletos"
+    # Validación segura
+    if not codigo or not ubicacion or "foto" not in request.files or request.files["foto"].filename == "":
+        return "⚠️ Error: debes completar todos los campos"
 
     # FOTO
     foto = request.files["foto"]
@@ -208,7 +211,7 @@ def registrar():
             if sheet:
                 try:
                     sheet.append_row([
-                        codigo,
+                        nombre,
                         tipo,
                         ubicacion,
                         ahora.strftime("%Y-%m-%d %H:%M:%S"),
@@ -238,7 +241,7 @@ def registrar():
             if sheet:
                 try:
                     sheet.append_row([
-                        codigo,
+                        nombre,  # 🔥 CORREGIDO (antes estaba codigo)
                         tipo,
                         ubicacion,
                         ahora.strftime("%Y-%m-%d %H:%M:%S"),
