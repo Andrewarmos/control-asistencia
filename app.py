@@ -34,13 +34,11 @@ except Exception as e:
 # ===============================
 # DATOS
 # ===============================
-entradas = {}
-
 empleados = [
     {"codigo": "13434", "nombre": "ANDRIW YESID SOCHA TALERO"},
-    {"codigo": "22345", "nombre": "JDANNA VALENTINA GOMEZ NEIRA"},
+    {"codigo": "22345", "nombre": "DANNA VALENTINA GOMEZ NEIRA"},
     {"codigo": "33456", "nombre": "STEFANY YURLEITH PARRADO PEREZ"},
-    {"codigo": "44567", "nombre": "CARLOS RAMIREZ"}
+    {"codigo": "44567", "nombre": "MARIA SOTO"}
 ]
 
 def obtener_nombre(codigo):
@@ -183,9 +181,6 @@ def registrar():
     zona = pytz.timezone('Australia/Sydney')
     ahora = datetime.now(zona)
 
-    print("Hora actual:", ahora)
-
-    # Validación segura
     if not codigo or not ubicacion or "foto" not in request.files or request.files["foto"].filename == "":
         return "⚠️ Error: debes completar todos los campos"
 
@@ -195,61 +190,26 @@ def registrar():
     ruta = os.path.join("static", nombre_foto)
     foto.save(ruta)
 
-    horas_trabajadas = ""
-
+    # MENSAJE SIMPLE
     if tipo == "entrada":
-
-        if codigo in entradas:
-            mensaje = "⚠️ Ya marcaste entrada"
-            color = "orange"
-
-        else:
-            entradas[codigo] = ahora
-            mensaje = "Feliz inicio de turno 👋"
-            color = "#2ecc71"
-
-            if sheet:
-                try:
-                    sheet.append_row([
-                        nombre,
-                        tipo,
-                        ubicacion,
-                        ahora.strftime("%Y-%m-%d %H:%M:%S"),
-                        "",
-                        f"https://control-armos.onrender.com/static/{nombre_foto}"
-                    ])
-                except Exception as e:
-                    print("Error Sheets:", e)
-
+        mensaje = "Feliz inicio de turno 👋"
+        color = "#2ecc71"
     else:
+        mensaje = "Gracias por tu ayuda 🙌"
+        color = "#e74c3c"
 
-        if codigo not in entradas:
-            mensaje = "⚠️ Primero debes marcar entrada"
-            color = "orange"
-
-        else:
-            inicio = entradas[codigo]
-            diferencia = ahora - inicio
-            horas = round(diferencia.total_seconds() / 3600, 2)
-            horas_trabajadas = f"{horas} horas"
-
-            mensaje = f"Gracias por tu ayuda 🙌<br>Trabajaste: {horas} horas"
-            color = "#e74c3c"
-
-            del entradas[codigo]
-
-            if sheet:
-                try:
-                    sheet.append_row([
-                        nombre,  # 🔥 CORREGIDO (antes estaba codigo)
-                        tipo,
-                        ubicacion,
-                        ahora.strftime("%Y-%m-%d %H:%M:%S"),
-                        horas_trabajadas,
-                        f"https://control-armos.onrender.com/static/{nombre_foto}"
-                    ])
-                except Exception as e:
-                    print("Error Sheets:", e)
+    # GUARDAR EN SHEETS
+    if sheet:
+        try:
+            sheet.append_row([
+                nombre,
+                tipo,
+                ubicacion,
+                ahora.strftime("%Y-%m-%d %H:%M:%S"),
+                f"https://control-armos.onrender.com/static/{nombre_foto}"
+            ])
+        except Exception as e:
+            print("Error Sheets:", e)
 
     return f"""
     <html>
