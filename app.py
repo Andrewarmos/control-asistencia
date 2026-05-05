@@ -38,7 +38,8 @@ empleados = [
     {"codigo": "13434", "nombre": "ANDRIW YESID SOCHA TALERO"},
     {"codigo": "22345", "nombre": "DANNA VALENTINA GOMEZ NEIRA"},
     {"codigo": "33456", "nombre": "STEFANY YURLEITH PARRADO PEREZ"},
-    {"codigo": "44567", "nombre": "MARIA SOTO"}
+    {"codigo": "44567", "nombre": "MARIA SOTO"},
+    {"codigo": "57556", "nombre": "ANGIE NATALIA BERNATE MORALES"}
 ]
 
 def obtener_nombre(codigo):
